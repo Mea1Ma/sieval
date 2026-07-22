@@ -121,7 +121,7 @@ def tokens_to_generate(
     should_skip_think_budget = (
         for_dataset
         and context_length is not None
-        and context_length not in (32768, 131072)  # 32k and 128k
+        and context_length != 131072 # 128k
     )
 
     if should_skip_think_budget:
