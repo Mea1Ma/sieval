@@ -35,6 +35,7 @@ from .dialect import (
 from .dialect_registry import compatibility_factory_for
 from .ir import CompletionInput, ModelInput, Request, Response
 from .model import Model
+from .reconcile import RuntimeBindingPlan
 from .transports.sglang import (
     SGLANG_LEGACY_DIALECT_OPTION_KEYS,
     SglangTransport,
@@ -206,6 +207,10 @@ class SglangGenModel(Model):
         return None
 
     @property
+    def provenance_plan(self) -> None:
+        return None
+
+    @property
     def capabilities(self) -> frozenset[Capability]:
         return self._legacy_transport.capabilities
 
@@ -224,10 +229,17 @@ class SglangGenModel(Model):
         async with self._pool.acquire(self._limiter):
             return await self._legacy_transport.arun(req)
 
-    def with_dialect(self, dialect_id: str, runtime_plan: Any) -> Model:
+    def with_dialect(self, dialect_id: str, runtime_plan: RuntimeBindingPlan) -> Model:
         del dialect_id, runtime_plan
         raise RuntimeError(
             "sglang_legacy cannot rebind before the sglang_native PR-5 binder"
+        )
+
+    def with_provenance_plan(self, provenance_plan: RuntimeBindingPlan) -> Self:
+        del provenance_plan
+        raise RuntimeError(
+            "sglang_legacy has no runtime plan for provenance before the "
+            "sglang_native PR-5 binder"
         )
 
     def _legacy_lifecycle_owner(self) -> "SglangGenModel":
